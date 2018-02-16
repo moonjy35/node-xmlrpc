@@ -1,3 +1,6 @@
+## Monkey Patched xmlrpc module for Promise
+
+
 ## The What
 
 The xmlrpc module is a pure JavaScript XML-RPC server and client for node.js.
@@ -54,10 +57,9 @@ setTimeout(function () {
   var client = xmlrpc.createClient({ host: 'localhost', port: 9090, path: '/'})
 
   // Sends a method call to the XML-RPC server
-  client.methodCall('anAction', ['aParam'], function (error, value) {
-    // Results of the method response
-    console.log('Method response for \'anAction\': ' + value)
-  })
+  client.methodCall('anAction', ['aParam'])
+    .then(result)
+    .catch(err)
 
 }, 1000)
 ```
@@ -134,10 +136,11 @@ var client = xmlrpc.createClient({
 client.setCookie('login', 'bilbo');
 
 //This call will send provided cookie to the server
-client.methodCall('someAction', [], function(error, value) {
-  //Here we may get cookie received from server if we know its name
-  console.log(client.getCookie('session'));
-});
+client.methodCall('someAction', [])
+  .then(
+    //Here we may get cookie received from server if we know its name
+    console.log(client.getCookie('session'));
+  )
 
 ```
 
@@ -174,7 +177,7 @@ definition:
 
 ```javascript
 var client = xmlrpc.createClient('YOUR_ENDPOINT');
-client.methodCall('YOUR_METHOD', [new YourType(yourVariable)], yourCallback);
+client.methodCall('YOUR_METHOD', [new YourType(yourVariable)]).then(result).catch(err);
 ```
 
 ### To Debug (client-side)
@@ -185,15 +188,16 @@ to aide with request debugging. Example:
 
 ```javascript
 var client = xmlrpc.createClient({ host: 'example.com', port: 80 });
-client.methodCall('FAULTY_METHOD', [], function (error, value) {
-  if (error) {
+client.methodCall('FAULTY_METHOD', [])
+  .then(function(value){
+    console.log('value:', value);
+  })
+  .catch(function(error){
     console.log('error:', error);
     console.log('req headers:', error.req && error.req._header);
     console.log('res code:', error.res && error.res.statusCode);
     console.log('res body:', error.body);
-  } else {
-    console.log('value:', value);
-  }
+  });
 });
 
 // error: [Error: Unknown XML-RPC tag 'TITLE']
